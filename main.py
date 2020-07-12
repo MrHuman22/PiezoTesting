@@ -13,7 +13,7 @@ from enum import Enum
 from datetime import datetime
 from time import sleep
 
-testpath = os.path.join(os.getcwd(),'Tests')
+testpath = os.path.join(os.getcwd(),'MagTests')
 
 # TODO: validation on filenames
 
@@ -24,16 +24,17 @@ class GuiKeys(Enum):
     cancel = 'Cancel'
     submit = 'Submit'
 
-def get_timestamp():
+def get_timestamp() -> str:
     return datetime.strftime(datetime.now(),"%Y-%m-%d_%H-%M")
-def countdown():
+
+def countdown() -> None:
     print('Ready!')
     sleep(1)
     print('Set!')
     sleep(1)
     print('Go!')
 
-def run_test(csv_filepath: str):
+def run_test(csv_filepath: str) -> None:
     GDX = gdx()
     GDX.open_usb()
     GDX.select_sensors([1]) # now will automatically select the corret sensor
@@ -54,7 +55,7 @@ def run_test(csv_filepath: str):
     GDX.close()
     print("Finishing up with the sensor")
 
-def create_multi_graph(csv_filepath: str, test_details: str = ''):
+def create_multi_graph(csv_filepath: str, test_details: str = '') -> None:
     print("Now starting to graph it...")
     df = pd.read_csv(csv_filepath, header=0)
     y_values = df['Potential (V)']
@@ -73,7 +74,7 @@ def create_multi_graph(csv_filepath: str, test_details: str = ''):
     plt.savefig(plot_filepath, bbox_inches='tight')
     
 
-def create_graph(csv_filepath: str, test_details: str = ''):
+def create_graph(csv_filepath: str, test_details: str = '') -> None:
     df = pd.read_csv(csv_filepath, header=0)
     fig, ax = plt.subplots(figsize=(20,10))
     ax.set_title(f"{test_details} (sampled every 10ms)")
@@ -83,14 +84,14 @@ def create_graph(csv_filepath: str, test_details: str = ''):
     sns.lineplot(x=x_values, y = y_values)
     plot_filepath = csv_filepath[:-4]+".png"
     plt.savefig(plot_filepath, bbox_inches='tight')
+    plt.show() # Comment out to stop auto-show
 
-def generateLayout():
+def generateLayout() -> list:
     return [[sg.Text("Enter file name: "), sg.InputText(key=GuiKeys.filename.value, size=(8,1)), sg.Text(".csv")],
         [sg.Text("Test Details: "), sg.InputText(key=GuiKeys.test_details.value)],
         [sg.Submit(),sg.Cancel(),sg.Quit()]]
 
-def main():
-    
+def main() -> None:
     print('Looping...')
     window = sg.Window("Choose filename", layout=generateLayout()) 
     event, values = window.read()
@@ -106,13 +107,15 @@ def main():
         filepath = os.path.join(testpath,f"{get_timestamp()}_{filename}")
         test_details = values[GuiKeys.test_details.value]
         run_test(filepath)
-        create_multi_graph(filepath,test_details=test_details)
+        # create_multi_graph(filepath,test_details=test_details)
+        create_graph(filepath,test_details=test_details)
     else:
         print("Unknown input!")
     window.close()
     window = None
     filepath = None # wipe the filepath
-    print("Restarting Loop.")
+    # print("Restarting Loop.")
+    # img = Image.open(r"Tests")
 
 if __name__ == "__main__":
     main()
